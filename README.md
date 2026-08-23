@@ -2,6 +2,10 @@
 
 Cogniva is an LLM-powered document intelligence system for uploading, processing, and querying personal PDF and DOCX documents. Its goal is to demonstrate a complete information system with document management, semantic retrieval, grounded AI answers, summaries, and source citations.
 
+## UI language convention
+
+All user-facing application text is written in natural Serbian Latin. Source code identifiers, API contracts, database names, and other technical elements remain in English. This convention applies to every current and future frontend feature, including validation, errors, statuses, notifications, empty states, and the AI workspace.
+
 > **Development status:** Cogniva is currently in Phase 2. Database models and JWT authentication are implemented. Document processing, embeddings, RAG, summaries, and chat will be implemented in later phases.
 
 ## Technology stack
