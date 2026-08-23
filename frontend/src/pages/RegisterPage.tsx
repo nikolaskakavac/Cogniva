@@ -18,6 +18,27 @@ export function RegisterPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+
+    if (!firstName.trim()) {
+      setError('Unesite ime.')
+      return
+    }
+
+    if (!lastName.trim()) {
+      setError('Unesite prezime.')
+      return
+    }
+
+    if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
+      setError('Unesite ispravnu email adresu.')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('Lozinka mora imati najmanje 8 karaktera.')
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -35,34 +56,34 @@ export function RegisterPage() {
       <section className="auth-panel">
         <Link className="brand" to="/">Cogniva</Link>
         <div className="auth-heading">
-          <h1>Create account</h1>
-          <p>Start building your private document workspace.</p>
+          <h1>Kreirajte nalog</h1>
+          <p>Napravite svoj lični prostor za rad sa dokumentima.</p>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="form-row">
             <label>
-              First name
+              Ime
               <input required maxLength={100} value={firstName} onChange={(event) => setFirstName(event.target.value)} />
             </label>
             <label>
-              Last name
+              Prezime
               <input required maxLength={100} value={lastName} onChange={(event) => setLastName(event.target.value)} />
             </label>
           </div>
           <label>
-            Email
+            Email adresa
             <input autoComplete="email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
           </label>
           <label>
-            Password
+            Lozinka
             <input autoComplete="new-password" type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-primary" type="submit" disabled={submitting}>
-            {submitting ? 'Creating account…' : 'Create account'}
+            {submitting ? 'Kreiranje naloga…' : 'Kreiraj nalog'}
           </button>
         </form>
-        <p className="auth-switch">Already registered? <Link to="/login">Sign in</Link></p>
+        <p className="auth-switch">Već imate nalog? <Link to="/login">Prijavite se</Link></p>
       </section>
     </main>
   )

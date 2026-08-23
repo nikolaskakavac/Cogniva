@@ -17,7 +17,7 @@ export function AppShell() {
         <div className="account-actions">
           <span>{user?.email}</span>
           <button className="button button-secondary" type="button" onClick={handleLogout}>
-            Logout
+            Odjavi se
           </button>
         </div>
       </header>

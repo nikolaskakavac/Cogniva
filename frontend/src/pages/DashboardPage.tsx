@@ -5,10 +5,10 @@ export function DashboardPage() {
 
   return (
     <section className="dashboard-placeholder">
-      <p className="eyebrow">Personal workspace</p>
-      <h1>Welcome, {user?.firstName}</h1>
+      <p className="eyebrow">Lični radni prostor</p>
+      <h1>Dobrodošli, {user?.firstName}</h1>
       <p>
-        Your Cogniva account is ready. Document management will arrive in the next phase.
+        Vaš Cogniva nalog je spreman. Upravljanje dokumentima biće dostupno u narednoj fazi.
       </p>
     </section>
   )

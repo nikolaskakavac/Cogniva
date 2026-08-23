@@ -6,7 +6,7 @@ export function ProtectedRoute() {
   const location = useLocation()
 
   if (loading) {
-    return <div className="route-loading">Loading Cogniva…</div>
+    return <div className="route-loading">Cogniva se učitava…</div>
   }
 
   if (!isAuthenticated) {

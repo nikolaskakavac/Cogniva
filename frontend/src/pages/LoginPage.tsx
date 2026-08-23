@@ -17,6 +17,22 @@ export function LoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+
+    if (!email.trim()) {
+      setError('Unesite email adresu.')
+      return
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError('Unesite ispravnu email adresu.')
+      return
+    }
+
+    if (!password) {
+      setError('Unesite lozinku.')
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -36,12 +52,12 @@ export function LoginPage() {
       <section className="auth-panel">
         <Link className="brand" to="/">Cogniva</Link>
         <div className="auth-heading">
-          <h1>Sign in</h1>
-          <p>Continue to your personal document workspace.</p>
+          <h1>Prijavite se</h1>
+          <p>Nastavite ka svom ličnom prostoru za rad sa dokumentima.</p>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <label>
-            Email
+            Email adresa
             <input
               autoComplete="email"
               type="email"
@@ -51,7 +67,7 @@ export function LoginPage() {
             />
           </label>
           <label>
-            Password
+            Lozinka
             <input
               autoComplete="current-password"
               type="password"
@@ -62,10 +78,10 @@ export function LoginPage() {
           </label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-primary" type="submit" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Sign in'}
+            {submitting ? 'Prijavljivanje…' : 'Prijavi se'}
           </button>
         </form>
-        <p className="auth-switch">No account? <Link to="/register">Create one</Link></p>
+        <p className="auth-switch">Nemate nalog? <Link to="/register">Registrujte se</Link></p>
       </section>
     </main>
   )
