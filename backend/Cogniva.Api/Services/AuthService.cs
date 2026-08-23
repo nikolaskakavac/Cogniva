@@ -31,8 +31,8 @@ public sealed class AuthService(
         {
             throw new ApiException(
                 StatusCodes.Status409Conflict,
-                "Email is already registered.",
-                "An account with this email address already exists.");
+                "Email adresa je već registrovana.",
+                "Nalog sa ovom email adresom već postoji.");
         }
 
         var user = new User
@@ -54,8 +54,8 @@ public sealed class AuthService(
         {
             throw new ApiException(
                 StatusCodes.Status409Conflict,
-                "Email is already registered.",
-                "An account with this email address already exists.");
+                "Email adresa je već registrovana.",
+                "Nalog sa ovom email adresom već postoji.");
         }
 
         return CreateAuthResponse(user);
@@ -75,8 +75,8 @@ public sealed class AuthService(
         {
             throw new ApiException(
                 StatusCodes.Status401Unauthorized,
-                "Invalid credentials.",
-                "The email address or password is incorrect.");
+                "Neispravni podaci za prijavu.",
+                "Email adresa ili lozinka nisu ispravni.");
         }
 
         return CreateAuthResponse(user);
@@ -91,8 +91,8 @@ public sealed class AuthService(
             .SingleOrDefaultAsync(item => item.Id == userId, cancellationToken)
             ?? throw new ApiException(
                 StatusCodes.Status401Unauthorized,
-                "Invalid authentication token.",
-                "The authenticated user no longer exists.");
+                "Neispravan token za prijavu.",
+                "Prijavljeni korisnik više ne postoji.");
 
         return ToCurrentUserResponse(user);
     }
