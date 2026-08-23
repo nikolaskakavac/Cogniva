@@ -12,10 +12,22 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
         }
         catch (Exception exception)
         {
-            logger.LogError(exception,
-                "An unhandled exception occurred while processing {Method} {Path}",
-                context.Request.Method,
-                context.Request.Path);
+            if (exception is ApiException apiException)
+            {
+                logger.LogWarning(
+                    "Request {Method} {Path} failed with status {StatusCode}: {Message}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    apiException.StatusCode,
+                    apiException.Message);
+            }
+            else
+            {
+                logger.LogError(exception,
+                    "An unhandled exception occurred while processing {Method} {Path}",
+                    context.Request.Method,
+                    context.Request.Path);
+            }
 
             if (context.Response.HasStarted)
             {
@@ -23,19 +35,30 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
             }
 
             context.Response.Clear();
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var statusCode = exception is ApiException knownException
+                ? knownException.StatusCode
+                : StatusCodes.Status500InternalServerError;
+
+            context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/problem+json";
 
             var problem = new ProblemDetails
             {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "An unexpected error occurred.",
-                Detail = "The server could not complete the request.",
+                Status = statusCode,
+                Title = exception is ApiException apiError
+                    ? apiError.Title
+                    : "An unexpected error occurred.",
+                Detail = exception is ApiException
+                    ? exception.Message
+                    : "The server could not complete the request.",
                 Instance = context.Request.Path
             };
 
             problem.Extensions["traceId"] = context.TraceIdentifier;
-            await context.Response.WriteAsJsonAsync(problem);
+            await context.Response.WriteAsJsonAsync(
+                problem,
+                options: null,
+                contentType: "application/problem+json");
         }
     }
 }
