@@ -1,0 +1,24 @@
+name: cogniva
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: cogniva-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cogniva}
+      POSTGRES_USER: ${POSTGRES_USER:-cogniva}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cogniva_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cogniva_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  cogniva_postgres_data:
