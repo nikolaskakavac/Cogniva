@@ -47,10 +47,10 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
                 Status = statusCode,
                 Title = exception is ApiException apiError
                     ? apiError.Title
-                    : "An unexpected error occurred.",
+                    : "Došlo je do neočekivane greške.",
                 Detail = exception is ApiException
                     ? exception.Message
-                    : "The server could not complete the request.",
+                    : "Server nije mogao da obradi zahtev.",
                 Instance = context.Request.Path
             };
 
