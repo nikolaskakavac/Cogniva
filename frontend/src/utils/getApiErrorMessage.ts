@@ -3,7 +3,7 @@ import type { ApiProblem } from '../types/auth'
 
 export function getApiErrorMessage(error: unknown): string {
   if (!axios.isAxiosError<ApiProblem>(error)) {
-    return 'Something went wrong. Please try again.'
+    return 'Došlo je do greške. Pokušajte ponovo.'
   }
 
   const problem = error.response?.data
@@ -11,5 +11,5 @@ export function getApiErrorMessage(error: unknown): string {
     ? Object.values(problem.errors).flat()[0]
     : undefined
 
-  return validationMessage ?? problem?.detail ?? problem?.title ?? 'Unable to complete the request.'
+  return validationMessage ?? problem?.detail ?? problem?.title ?? 'Zahtev nije moguće izvršiti.'
 }
