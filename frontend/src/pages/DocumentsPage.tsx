@@ -148,11 +148,11 @@ export function DocumentsPage() {
             <tbody>
               {documents.map((document) => (
                 <tr key={document.id}>
-                  <td><strong>{document.name}</strong><small>{document.originalFileName}</small></td>
-                  <td>{document.fileType}</td>
-                  <td><span className={`status status-${document.status.toLowerCase()}`}>{documentStatusLabels[document.status]}</span></td>
-                  <td>{formatDate(document.uploadedAt)}</td>
-                  <td><div className="row-actions"><Link to={`/app/documents/${document.id}`}>Otvori</Link><button type="button" onClick={() => setDocumentToDelete(document)}>Obriši</button></div></td>
+                  <td data-label="Naziv"><strong>{document.name}</strong><small>{document.originalFileName}</small></td>
+                  <td data-label="Tip">{document.fileType}</td>
+                  <td data-label="Status"><span className={`status status-${document.status.toLowerCase()}`}>{documentStatusLabels[document.status]}</span></td>
+                  <td data-label="Otpremljen">{formatDate(document.uploadedAt)}</td>
+                  <td data-label="Akcije"><div className="row-actions"><Link to={`/app/documents/${document.id}`}>Otvori</Link><button type="button" onClick={() => setDocumentToDelete(document)}>Obriši</button></div></td>
                 </tr>
               ))}
             </tbody>
