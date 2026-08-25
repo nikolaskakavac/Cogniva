@@ -1,6 +1,7 @@
 using System.Text;
 using Cogniva.Api.Configuration;
 using Cogniva.Api.Data;
+using Cogniva.Api.ExternalServices.AI;
 using Cogniva.Api.Middleware;
 using Cogniva.Api.Models;
 using Cogniva.Api.Services;
@@ -8,6 +9,7 @@ using Cogniva.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -47,6 +49,28 @@ builder.Services.AddOptions<JwtOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<FileStorageOptions>()
+    .Bind(builder.Configuration.GetSection(FileStorageOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<ChunkingOptions>()
+    .Bind(builder.Configuration.GetSection(ChunkingOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<AiOptions>()
+    .Bind(builder.Configuration.GetSection(AiOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+var fileStorageOptions = builder.Configuration
+    .GetSection(FileStorageOptions.SectionName)
+    .Get<FileStorageOptions>() ?? new FileStorageOptions();
+
+builder.Services.Configure<FormOptions>(options =>
+    options.MultipartBodyLengthLimit = (fileStorageOptions.MaxFileSizeMb + 1L) * 1024L * 1024L);
+
 var connectionString = builder.Configuration[$"{DatabaseOptions.SectionName}:ConnectionString"];
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -81,6 +105,16 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<ITextExtractionService, TextExtractionService>();
+builder.Services.AddScoped<IChunkingService, ChunkingService>();
+builder.Services.AddScoped<IDocumentProcessingService, DocumentProcessingService>();
+builder.Services.AddHttpClient<IEmbeddingService, OpenAiEmbeddingService>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl.EndsWith('/') ? options.BaseUrl : options.BaseUrl + '/');
+    client.Timeout = TimeSpan.FromMinutes(2);
+});
 
 builder.Services.AddCors(options =>
 {
