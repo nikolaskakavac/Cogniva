@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cogniva.Api", "Cogniva.Api\Cogniva.Api.csproj", "{180AD016-F05B-4697-80F1-70DF92AD6BB0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cogniva.Api.Tests", "Cogniva.Api.Tests\Cogniva.Api.Tests.csproj", "{B2709341-14A8-4311-B461-239C36D88274}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{180AD016-F05B-4697-80F1-70DF92AD6BB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{180AD016-F05B-4697-80F1-70DF92AD6BB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{180AD016-F05B-4697-80F1-70DF92AD6BB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2709341-14A8-4311-B461-239C36D88274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2709341-14A8-4311-B461-239C36D88274}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2709341-14A8-4311-B461-239C36D88274}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2709341-14A8-4311-B461-239C36D88274}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
