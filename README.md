@@ -6,7 +6,7 @@ Cogniva is an LLM-powered document intelligence system for uploading, processing
 
 All user-facing application text is written in natural Serbian Latin. Source code identifiers, API contracts, database names, and other technical elements remain in English. This convention applies to every current and future frontend feature, including validation, errors, statuses, notifications, empty states, and the AI workspace.
 
-> **Development status:** Cogniva is currently in Phase 2. Database models and JWT authentication are implemented. Document processing, embeddings, RAG, summaries, and chat will be implemented in later phases.
+> **Development status:** Cogniva is currently in Phase 4. Authentication, secure document management, PDF/DOCX extraction, chunking, and embeddings are implemented. RAG answers, summaries, and chat will be implemented in later phases.
 
 ## Technology stack
 
@@ -135,6 +135,11 @@ GET /api/health
 POST /api/auth/register
 POST /api/auth/login
 GET /api/auth/me
+GET /api/documents
+GET /api/documents/{id}
+POST /api/documents/upload
+DELETE /api/documents/{id}
+POST /api/documents/{id}/process
 ```
 
 `GET /api/auth/me` requires a valid bearer token. Swagger exposes an Authorize action for testing protected endpoints.
@@ -147,7 +152,47 @@ The initial `InitialCreate` migration creates users, documents, document chunks,
 
 ## Current limitations
 
-- No document upload or extraction
-- No embedding generation or vector search
+- Scanned PDFs without a text layer are not supported because OCR is outside the current scope
+- Embeddings are stored, but semantic search is not exposed yet
 - No LLM, RAG, summaries, or chat workflow
 - No refresh tokens
+
+## Local document storage
+
+Uploaded documents are stored under `backend/Cogniva.Api/Storage/uploads` by default. The physical filename is a generated GUID with the validated `.pdf` or `.docx` extension; the original filename is metadata only and is never used as a server-side path. Configure storage through:
+
+```text
+FileStorage__UploadPath=Storage/uploads
+FileStorage__MaxFileSizeMb=20
+```
+
+Only PDF and DOCX uploads are accepted. Every list, details, and delete operation is filtered by the authenticated user's server-side identity.
+
+## Document processing flow
+
+```text
+Uploaded → Processing → Ready
+                    ↘ Failed
+```
+
+Processing reads PDF files page by page with PdfPig and preserves page numbers. DOCX paragraphs, headings, lists, and table rows are read in document order with Open XML; DOCX page numbers remain `null` because pagination is not part of the document structure.
+
+Normalized text is split with a paragraph-aware strategy. Long paragraphs are split at sentence boundaries and only then by words. The default target is approximately 750 tokens with a 120-token overlap and an 80-token minimum. Token counts use a documented approximation of four characters per token. When a chunk spans multiple PDF pages, its `PageNumber` represents the first page contributing content to that chunk.
+
+After extraction and chunking, content is sent in one batch to an OpenAI-compatible `/embeddings` endpoint. New chunks replace old chunks only after extraction and embedding generation succeed, and the database replacement is transactional.
+
+Configure processing with:
+
+```text
+Chunking__TargetTokens=750
+Chunking__OverlapTokens=120
+Chunking__MinimumTokens=80
+
+AI__Provider=OpenAICompatible
+AI__BaseUrl=https://api.openai.com/v1/
+AI__ApiKey=
+AI__EmbeddingModel=text-embedding-3-small
+AI__EmbeddingDimensions=1536
+```
+
+The pgvector column remains unconstrained so the embedding model can be changed through configuration during development. The application validates that every returned vector matches `AI__EmbeddingDimensions`. Existing chunks must be reprocessed when the model or dimension changes.
