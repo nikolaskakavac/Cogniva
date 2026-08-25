@@ -7,6 +7,7 @@ import { DocumentsPage } from './pages/DocumentsPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { ChatPage } from './pages/ChatPage'
 
 export default function App() {
   return (
@@ -19,6 +20,8 @@ export default function App() {
           <Route path="/app" element={<DashboardPage />} />
           <Route path="/app/documents" element={<DocumentsPage />} />
           <Route path="/app/documents/:id" element={<DocumentDetailsPage />} />
+          <Route path="/app/chat" element={<ChatPage />} />
+          <Route path="/app/chat/:id" element={<ChatPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

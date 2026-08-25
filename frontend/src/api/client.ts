@@ -6,9 +6,6 @@ export const unauthorizedEventName = 'cogniva:unauthorized'
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   timeout: 15_000,
 })
 
