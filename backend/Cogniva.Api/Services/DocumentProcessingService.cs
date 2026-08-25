@@ -106,9 +106,12 @@ public sealed class DocumentProcessingService(
                 CancellationToken.None);
             failedDocument.Status = DocumentStatus.Failed;
             failedDocument.ProcessedAt = null;
-            failedDocument.ProcessingError = exception is DocumentProcessingException
-                ? exception.Message
-                : "Došlo je do neočekivane greške tokom obrade dokumenta.";
+            failedDocument.ProcessingError = exception switch
+            {
+                DocumentProcessingException => exception.Message,
+                OperationCanceledException => "Obrada dokumenta je prekinuta ili je trajala predugo.",
+                _ => "Došlo je do neočekivane greške tokom obrade dokumenta."
+            };
             await dbContext.SaveChangesAsync(CancellationToken.None);
         }
 

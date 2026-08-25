@@ -25,19 +25,33 @@ public sealed class OpenAiEmbeddingService(
         CancellationToken cancellationToken = default)
     {
         if (texts.Count == 0) return [];
-        if (string.IsNullOrWhiteSpace(_options.ApiKey))
-        {
-            throw new DocumentProcessingException("Embedding servis nije konfigurisan. Nedostaje AI API ključ.");
-        }
-
         using var request = new HttpRequestMessage(HttpMethod.Post, "embeddings");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
+        if (!string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
+        }
         request.Content = JsonContent.Create(new EmbeddingRequest(
             _options.EmbeddingModel,
             texts,
             _options.EmbeddingDimensions));
 
-        using var response = await httpClient.SendAsync(request, cancellationToken);
+        HttpResponseMessage response;
+        try
+        {
+            response = await httpClient.SendAsync(request, cancellationToken);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new DocumentProcessingException("Embedding servis trenutno nije dostupan.");
+        }
+        catch (HttpRequestException exception)
+        {
+            logger.LogError(exception, "Embedding provider request failed");
+            throw new DocumentProcessingException("Embedding servis trenutno nije dostupan.");
+        }
+
+        using (response)
+        {
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning("Embedding provider returned status {StatusCode}", (int)response.StatusCode);
@@ -54,6 +68,7 @@ public sealed class OpenAiEmbeddingService(
         }
 
         return ordered;
+        }
     }
 
     private sealed record EmbeddingRequest(
