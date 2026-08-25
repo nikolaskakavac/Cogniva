@@ -64,6 +64,18 @@ builder.Services.AddOptions<AiOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<RagOptions>()
+    .Bind(builder.Configuration.GetSection(RagOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<SummaryOptions>()
+    .Bind(builder.Configuration.GetSection(SummaryOptions.SectionName))
+    .ValidateDataAnnotations()
+    .Validate(options => options.DirectSummaryMaxCharacters >= options.PartialBatchMaxCharacters,
+        "Summary:DirectSummaryMaxCharacters must be greater than or equal to Summary:PartialBatchMaxCharacters.")
+    .ValidateOnStart();
+
 var fileStorageOptions = builder.Configuration
     .GetSection(FileStorageOptions.SectionName)
     .Get<FileStorageOptions>() ?? new FileStorageOptions();
@@ -109,11 +121,22 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<ITextExtractionService, TextExtractionService>();
 builder.Services.AddScoped<IChunkingService, ChunkingService>();
 builder.Services.AddScoped<IDocumentProcessingService, DocumentProcessingService>();
+builder.Services.AddScoped<ISemanticSearchService, SemanticSearchService>();
+builder.Services.AddScoped<IRagService, RagService>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<ISummaryService, SummaryService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddHttpClient<IEmbeddingService, OpenAiEmbeddingService>((serviceProvider, client) =>
 {
     var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiOptions>>().Value;
     client.BaseAddress = new Uri(options.BaseUrl.EndsWith('/') ? options.BaseUrl : options.BaseUrl + '/');
-    client.Timeout = TimeSpan.FromMinutes(2);
+    client.Timeout = TimeSpan.FromMinutes(30);
+});
+builder.Services.AddHttpClient<ILlmService, OpenAiCompatibleLlmService>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl.EndsWith('/') ? options.BaseUrl : options.BaseUrl + '/');
+    client.Timeout = TimeSpan.FromMinutes(30);
 });
 
 builder.Services.AddCors(options =>
