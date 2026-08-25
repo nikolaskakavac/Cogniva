@@ -22,4 +22,9 @@ public interface IDocumentService
         Guid userId,
         Guid documentId,
         CancellationToken cancellationToken = default);
+
+    Task<DocumentDetailsResponse> SummarizeDocumentAsync(
+        Guid userId,
+        Guid documentId,
+        CancellationToken cancellationToken = default);
 }

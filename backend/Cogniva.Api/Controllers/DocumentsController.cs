@@ -56,6 +56,12 @@ public sealed class DocumentsController(
         return Ok(await documentProcessingService.ProcessDocumentAsync(GetUserId(), id, cancellationToken));
     }
 
+    [HttpPost("{id:guid}/summarize")]
+    public async Task<ActionResult<DocumentDetailsResponse>> SummarizeDocument(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        Ok(await documentService.SummarizeDocumentAsync(GetUserId(), id, cancellationToken));
+
     private Guid GetUserId() => currentUserService.UserId
         ?? throw new ApiException(
             StatusCodes.Status401Unauthorized,

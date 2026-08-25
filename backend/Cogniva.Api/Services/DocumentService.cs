@@ -13,6 +13,7 @@ public sealed class DocumentService(
     AppDbContext dbContext,
     IWebHostEnvironment environment,
     IOptions<FileStorageOptions> storageOptions,
+    ISummaryService summaryService,
     ILogger<DocumentService> logger) : IDocumentService
 {
     private static readonly HashSet<string> AllowedExtensions =
@@ -163,6 +164,30 @@ public sealed class DocumentService(
         dbContext.Documents.Remove(document);
         await dbContext.SaveChangesAsync(cancellationToken);
         TryDeletePhysicalFile(physicalPath, document.Id);
+    }
+
+    public async Task<DocumentDetailsResponse> SummarizeDocumentAsync(
+        Guid userId,
+        Guid documentId,
+        CancellationToken cancellationToken = default)
+    {
+        var document = await dbContext.Documents
+            .Include(item => item.Chunks.OrderBy(chunk => chunk.ChunkIndex))
+            .SingleOrDefaultAsync(item => item.UserId == userId && item.Id == documentId, cancellationToken)
+            ?? throw DocumentNotFound();
+
+        if (document.Status != DocumentStatus.Ready)
+        {
+            throw new ApiException(409, "Dokument nije spreman.", "Dokument mora biti obrađen pre generisanja sažetka.");
+        }
+
+        var summary = await summaryService.GenerateAsync(
+            document.OriginalFileName,
+            document.Chunks.Select(chunk => chunk.Content).ToList(),
+            cancellationToken);
+        document.Summary = summary;
+        await dbContext.SaveChangesAsync(CancellationToken.None);
+        return await GetDocumentAsync(userId, documentId, CancellationToken.None);
     }
 
     private string ValidateFile(IFormFile? file)
