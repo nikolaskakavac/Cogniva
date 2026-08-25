@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getDocument, processDocument } from '../api/documents'
+import { getDocument, processDocument, summarizeDocument } from '../api/documents'
 import type { DocumentDetails } from '../types/documents'
 import { documentStatusLabels } from '../types/documents'
 import { getApiErrorMessage } from '../utils/getApiErrorMessage'
@@ -17,6 +17,7 @@ export function DocumentDetailsPage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [summarizing, setSummarizing] = useState(false)
 
   async function loadDocument() {
     if (!id) return
@@ -32,6 +33,16 @@ export function DocumentDetailsPage() {
   }
 
   useEffect(() => { void loadDocument() }, [id])
+
+  useEffect(() => {
+    if (!id || document?.status !== 'Processing') return
+
+    const interval = window.setInterval(() => {
+      void getDocument(id).then(setDocument).catch(() => undefined)
+    }, 2_000)
+
+    return () => window.clearInterval(interval)
+  }, [id, document?.status])
 
   async function handleProcessing() {
     if (!id || processing) return
@@ -50,6 +61,22 @@ export function DocumentDetailsPage() {
       await loadDocument()
     } finally {
       setProcessing(false)
+    }
+  }
+
+  async function handleSummary() {
+    if (!id || summarizing || document?.status !== 'Ready') return
+    setSummarizing(true)
+    setError(null)
+    setNotice('Cogniva generiše sažetak…')
+    try {
+      setDocument(await summarizeDocument(id))
+      setNotice('AI sažetak je uspešno generisan.')
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError))
+      setNotice(null)
+    } finally {
+      setSummarizing(false)
     }
   }
 
@@ -93,6 +120,10 @@ export function DocumentDetailsPage() {
           <button className="button button-primary" type="button" onClick={() => void handleProcessing()} disabled={processing}>{processing ? 'Dokument se obrađuje…' : 'Pokušaj ponovo'}</button>
         </>}
         {notice && <p className={`notice ${document.status === 'Ready' ? 'success' : document.status === 'Failed' ? 'error' : ''}`} role="status">{notice}</p>}
+      </section>
+      <section className="summary-section">
+        <div className="summary-heading"><div><p className="eyebrow">AI sažetak</p><h2>Sažetak dokumenta</h2></div>{document.status === 'Ready' && <button className="button button-secondary" type="button" onClick={() => void handleSummary()} disabled={summarizing}>{summarizing ? 'Generisanje sažetka…' : document.summary ? 'Generiši ponovo' : 'Generiši sažetak'}</button>}</div>
+        {document.status !== 'Ready' ? <p className="muted-copy">Dokument mora biti obrađen pre generisanja sažetka.</p> : summarizing ? <div className="summary-loading"><span className="spinner" /> <div><strong>Cogniva generiše sažetak…</strong><small>Lokalnom AI modelu može biti potrebno malo više vremena.</small></div></div> : document.summary ? <div className="summary-content">{document.summary}</div> : <div className="summary-empty"><p>Za ovaj dokument još nije generisan AI sažetak.</p><button className="text-button" type="button" onClick={() => void handleSummary()}>Generiši prvi sažetak</button></div>}
       </section>
     </section>
   )

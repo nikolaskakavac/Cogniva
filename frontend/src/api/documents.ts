@@ -18,7 +18,9 @@ export async function getDocument(id: string) {
 export async function uploadDocument(file: File) {
   const formData = new FormData()
   formData.append('file', file)
-  const response = await apiClient.post<UploadDocumentResponse>('/api/documents/upload', formData)
+  const response = await apiClient.post<UploadDocumentResponse>('/api/documents/upload', formData, {
+    timeout: 60_000,
+  })
   return response.data
 }
 
@@ -27,6 +29,15 @@ export async function deleteDocument(id: string) {
 }
 
 export async function processDocument(id: string) {
-  const response = await apiClient.post<DocumentDetails>(`/api/documents/${id}/process`)
+  const response = await apiClient.post<DocumentDetails>(`/api/documents/${id}/process`, undefined, {
+    timeout: 10 * 60_000,
+  })
+  return response.data
+}
+
+export async function summarizeDocument(id: string) {
+  const response = await apiClient.post<DocumentDetails>(`/api/documents/${id}/summarize`, undefined, {
+    timeout: 30 * 60_000,
+  })
   return response.data
 }
