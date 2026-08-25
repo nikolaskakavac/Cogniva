@@ -5,10 +5,10 @@ export function HomePage() {
     <main className="home">
       <section>
         <p className="eyebrow">Inteligentna analiza dokumenata</p>
-        <h1>Cogniva</h1>
+        <h1 className="home-title">Cogniva</h1>
         <p className="description">
-          Pretvorite dokumente u znanje. Otpremanje, analiza i AI odgovori
-          zasnovani na vašim dokumentima biće dostupni u narednim fazama razvoja.
+          Pretvorite dokumente u znanje. Analizirajte sadržaj, generišite sažetke
+          i dobijte odgovore zasnovane na sopstvenim izvorima.
         </p>
         <div className="home-actions">
           <Link className="button button-primary" to="/register">Započni</Link>
