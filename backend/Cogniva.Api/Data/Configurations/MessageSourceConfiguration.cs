@@ -10,15 +10,16 @@ public sealed class MessageSourceConfiguration : IEntityTypeConfiguration<Messag
     {
         builder.HasKey(source => source.Id);
         builder.HasIndex(source => source.MessageId);
+        builder.HasIndex(source => new { source.MessageId, source.DocumentChunkId }).IsUnique();
 
         builder.HasOne(source => source.Document)
             .WithMany(document => document.MessageSources)
             .HasForeignKey(source => source.DocumentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(source => source.DocumentChunk)
             .WithMany(chunk => chunk.MessageSources)
             .HasForeignKey(source => source.DocumentChunkId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
